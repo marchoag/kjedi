@@ -1,4 +1,4 @@
-# KJedi 🪐
+# KJedi
 
 **A privacy-preserving, local-only AI contract review tool for solo and small-firm California attorneys.**
 
@@ -6,7 +6,7 @@ KJedi is a tiny Next.js app that runs on `localhost` and lets you drop a PDF or 
 
 It's the minimum viable "bring-your-own-key" replacement for Anthropic's consumer Claude.ai interface, scoped to legal-document review, designed for a professional confidentiality posture.
 
-Built by [Marc Hoag](https://hoaglaw.ai), California attorney and founder of [Hoag Law.ai](https://hoaglaw.ai). KJedi runs the same system prompt and workflow I use for my own client work.
+Built by [Marc Hoag](https://marchoag.com), California attorney and founder of [Hoag Law.ai](https://hoaglaw.ai). KJedi runs the same system prompt and workflow I use for my own client work.
 
 ---
 
@@ -53,7 +53,7 @@ The design choices flow directly from that threat model:
 
 - A personal account created at [console.anthropic.com](https://console.anthropic.com) for API access generally defaults to Commercial Terms once a payment method is added. Commercial Terms include: no training on your inputs/outputs, 30-day retention, eligibility for a Data Processing Addendum (DPA).
 - A Claude.ai Pro or Max subscription is governed by **Consumer Terms**, which are materially different. Your API key under that account may or may not inherit the same protections — verify directly with Anthropic if you're unsure.
-- For California attorneys handling confidential client information, executing Anthropic's DPA is strongly recommended. It can be requested through the Console.
+- For California attorneys handling confidential client information, executing Anthropic's DPA is automatically agreed to in the Commercial Terms.
 
 **You — not me, not this README, not the tool — are responsible for verifying the terms applicable to your account.** Read the current Anthropic Commercial Terms at [anthropic.com/legal/commercial-terms](https://www.anthropic.com/legal/commercial-terms). They may have changed since this README was last updated.
 
@@ -88,7 +88,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The app will be available at `http://127.0.0.1:3000`. (Note: `127.0.0.1`, not `localhost` and not `0.0.0.0`.)
+The app will be available at `http://localhost:XXXX where XXXX is some port number, with default usually 3000. (The dev server is bound to 127.0.0.1 only, so the app is not reachable from anywhere else on your network — only from your own machine.)
 
 ---
 
@@ -131,6 +131,7 @@ MIT. Use it, fork it, modify it, ship your own version. Attribution appreciated 
 
 - [Blog post: why I built KJedi instead of using a SaaS legal AI tool](#) *(link forthcoming)*
 - [Hoag Law.ai](https://hoaglaw.ai) — my California fractional-GC practice
+- [My App Portfolio](https://marchoag.com) — a collection of my various web and iOS apps
 - [Marc Hoag on LinkedIn](https://linkedin.com/in/marchoag) | [@marc.hoag.ai.lawyer on TikTok](https://tiktok.com/@marc.hoag.ai.lawyer)
 
 ---
