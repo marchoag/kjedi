@@ -32,6 +32,14 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# eval harness outputs — reproducible via `npm run eval`, noisy diffs
+prompts/eval/out/
+
+# editor / shell backups
+*.bak
+*.bak.*
 
 # vercel
 .vercel

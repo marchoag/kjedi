@@ -1,65 +1,207 @@
-import Image from "next/image";
+"use client";
+
+import { useCallback, useRef, useState } from "react";
+
+import { ChatInput } from "@/components/ChatInput";
+import { ChatMessages, type ChatMessage } from "@/components/ChatMessages";
+import { MemoButton, MEMO_PROMPT } from "@/components/MemoButton";
+import { TokenCounter, type UsageTotals } from "@/components/TokenCounter";
+import {
+  Uploader,
+  type ExtractedDocument,
+} from "@/components/Uploader";
+
+const ZERO_USAGE: UsageTotals = {
+  input: 0,
+  cacheCreate: 0,
+  cacheRead: 0,
+  output: 0,
+};
 
 export default function Home() {
+  const [doc, setDoc] = useState<ExtractedDocument | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [streamingText, setStreamingText] = useState<string | null>(null);
+  const [usage, setUsage] = useState<UsageTotals>(ZERO_USAGE);
+  const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const send = useCallback(
+    async (text: string) => {
+      if (!doc) return;
+      setError(null);
+      const nextMessages: ChatMessage[] = [
+        ...messages,
+        { role: "user", text },
+      ];
+      setMessages(nextMessages);
+      setStreamingText("");
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            documentText: doc.text,
+            messages: nextMessages,
+          }),
+          signal: controller.signal,
+        });
+
+        if (!res.ok || !res.body) {
+          const json = await res.json().catch(() => ({}));
+          setError(json?.error?.message ?? `HTTP ${res.status}`);
+          setStreamingText(null);
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        let assistantText = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          let nl: number;
+          while ((nl = buf.indexOf("\n")) >= 0) {
+            const line = buf.slice(0, nl).trim();
+            buf = buf.slice(nl + 1);
+            if (!line) continue;
+            try {
+              const evt = JSON.parse(line);
+              if (evt.type === "text") {
+                assistantText += evt.text;
+                setStreamingText(assistantText);
+              } else if (evt.type === "usage") {
+                setUsage((prev) => ({
+                  input: prev.input + (evt.input ?? 0),
+                  cacheCreate: prev.cacheCreate + (evt.cacheCreate ?? 0),
+                  cacheRead: prev.cacheRead + (evt.cacheRead ?? 0),
+                  output: prev.output + (evt.output ?? 0),
+                }));
+              } else if (evt.type === "error") {
+                setError(evt.message);
+              }
+            } catch {
+              // ignore malformed line
+            }
+          }
+        }
+
+        if (assistantText) {
+          setMessages((m) => [...m, { role: "assistant", text: assistantText }]);
+        }
+      } catch (err) {
+        if ((err as { name?: string })?.name !== "AbortError") {
+          setError(err instanceof Error ? err.message : String(err));
+        }
+      } finally {
+        setStreamingText(null);
+        abortRef.current = null;
+      }
+    },
+    [doc, messages],
+  );
+
+  const abort = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
+
+  const clearConversation = useCallback(() => {
+    abort();
+    setMessages([]);
+    setStreamingText(null);
+    setUsage(ZERO_USAGE);
+    setError(null);
+  }, [abort]);
+
+  const newDocument = useCallback(() => {
+    abort();
+    setDoc(null);
+    setMessages([]);
+    setStreamingText(null);
+    setUsage(ZERO_USAGE);
+    setError(null);
+  }, [abort]);
+
+  const streaming = streamingText !== null;
+
+  if (!doc) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <Uploader onExtracted={setDoc} />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="flex flex-1 flex-col">
+      <div className="border-b border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-black">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0 truncate text-sm text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium">{doc.filename}</span>
+            {doc.pageCount !== undefined && (
+              <span className="ml-2 text-xs text-zinc-500">
+                {doc.pageCount} {doc.pageCount === 1 ? "page" : "pages"}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <MemoButton
+              disabled={streaming}
+              onClick={() => void send(MEMO_PROMPT)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <button
+              onClick={clearConversation}
+              disabled={streaming || messages.length === 0}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Clear chat
+            </button>
+            <button
+              onClick={newDocument}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              New document
+            </button>
+          </div>
         </div>
-      </main>
+      </div>
+
+      {doc.warning && (
+        <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
+          <div className="mx-auto max-w-4xl">⚠ {doc.warning}</div>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-4xl">
+          {messages.length === 0 && !streaming && (
+            <div className="px-4 py-12 text-center text-sm text-zinc-500">
+              Document loaded. Ask a question or click <strong>Generate Review Memo</strong>.
+            </div>
+          )}
+          <ChatMessages messages={messages} streamingText={streamingText} />
+          {error && (
+            <div className="mx-4 mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+              {error}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <TokenCounter usage={usage} />
+      <ChatInput
+        disabled={!doc || streaming}
+        onSend={send}
+        onAbort={abort}
+        streaming={streaming}
+      />
     </div>
   );
 }
