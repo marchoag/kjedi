@@ -41,6 +41,16 @@ prompts/eval/out/
 *.bak
 *.bak.*
 
+# manual regression test fixtures (real client documents) — local only
+# README is kept tracked so the convention is documented in-repo
+test-fixtures/*
+!test-fixtures/README.md
+
+# firm-standard contract templates and curated reference lens — local only
+# README (when added) is kept tracked so the convention is documented in-repo
+templates/*
+!templates/README.md
+
 # vercel
 .vercel
 

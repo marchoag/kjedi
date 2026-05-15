@@ -108,6 +108,7 @@ The system prompt instructs Claude to act as a senior California tech-transactio
 - **Yes:** First-pass review of a new contract before your own deep read. Catching issues you might miss. Generating a structured starting-point memo you'll edit and verify.
 - **Yes:** Negotiating with yourself before negotiating with the other side — KJedi will push back on your assumptions if you let it.
 - **No:** Final review without your own read. KJedi (like any LLM) confidently hallucinates citations, misreads cross-references, and occasionally invents clauses that aren't in the document.
+- **Caveat — section conflations on long contracts.** Expect occasional section-number conflations on long contracts (20+ pages). LLMs reasoning over long documents sometimes confuse adjacent or similar sections. The citation-anchoring format (`**[§ X.Y, "Title"]** ("fragment...")`) is designed to make this easy to catch — if the anchoring fragment doesn't match the section number, the citation is wrong. This is a known LLM limitation on long-document reasoning, true of any LLM-generated legal analysis (including hosted SaaS products that hide it). Verify every citation before relying on it.
 - **No:** Contracts outside California or outside tech-transactions practice without recalibrating the system prompt. KJedi will flag if a contract is outside its lane, but you should too.
 
 ---

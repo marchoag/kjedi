@@ -6,10 +6,7 @@ import { ChatInput } from "@/components/ChatInput";
 import { ChatMessages, type ChatMessage } from "@/components/ChatMessages";
 import { MemoButton, MEMO_PROMPT } from "@/components/MemoButton";
 import { TokenCounter, type UsageTotals } from "@/components/TokenCounter";
-import {
-  Uploader,
-  type ExtractedDocument,
-} from "@/components/Uploader";
+import { Uploader, type LoadedDocument } from "@/components/Uploader";
 
 const ZERO_USAGE: UsageTotals = {
   input: 0,
@@ -19,7 +16,7 @@ const ZERO_USAGE: UsageTotals = {
 };
 
 export default function Home() {
-  const [doc, setDoc] = useState<ExtractedDocument | null>(null);
+  const [doc, setDoc] = useState<LoadedDocument | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingText, setStreamingText] = useState<string | null>(null);
   const [usage, setUsage] = useState<UsageTotals>(ZERO_USAGE);
@@ -40,12 +37,17 @@ export default function Home() {
       const controller = new AbortController();
       abortRef.current = controller;
 
+      const document =
+        doc.kind === "pdf"
+          ? { kind: "pdf" as const, base64: doc.base64 }
+          : { kind: "docx" as const, text: doc.text };
+
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            documentText: doc.text,
+            document,
             messages: nextMessages,
           }),
           signal: controller.signal,
@@ -134,10 +136,13 @@ export default function Home() {
   if (!doc) {
     return (
       <div className="flex flex-1 flex-col">
-        <Uploader onExtracted={setDoc} />
+        <Uploader onLoaded={setDoc} />
       </div>
     );
   }
+
+  const pageCount = doc.kind === "pdf" ? doc.pageCount : undefined;
+  const warning = doc.kind === "pdf" ? doc.warning : undefined;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -145,11 +150,15 @@ export default function Home() {
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2">
           <div className="min-w-0 truncate text-sm text-zinc-700 dark:text-zinc-300">
             <span className="font-medium">{doc.filename}</span>
-            {doc.pageCount !== undefined && (
-              <span className="ml-2 text-xs text-zinc-500">
-                {doc.pageCount} {doc.pageCount === 1 ? "page" : "pages"}
-              </span>
-            )}
+            <span className="ml-2 text-xs text-zinc-500">
+              {doc.kind === "pdf" ? "PDF" : "DOCX"}
+              {pageCount !== undefined && (
+                <>
+                  {" · "}
+                  {pageCount} {pageCount === 1 ? "page" : "pages"}
+                </>
+              )}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <MemoButton
@@ -173,9 +182,9 @@ export default function Home() {
         </div>
       </div>
 
-      {doc.warning && (
+      {warning && (
         <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
-          <div className="mx-auto max-w-4xl">⚠ {doc.warning}</div>
+          <div className="mx-auto max-w-4xl">⚠ {warning}</div>
         </div>
       )}
 

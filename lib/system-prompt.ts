@@ -69,15 +69,15 @@ BEGIN MEMO FORMAT
 {2–3 sentence executive summary: overall risk posture, top concerns}
 
 ## 🔴 Red Flags (material risk — recommend changes before signing)
-- **[Section X.Y, "clause title"]** — {what it says} → {why it's a problem} → {concrete redline: specific clause text, OR specific quantified parameters (cap amount, time period, percentage, notice window), OR "delete and rely on §Y," OR "structural negotiation: [one-line summary]"}
+- **[§ X.Y, "clause title"]** ("3–7 word verbatim fragment from the operative clause") — {what it says} → {why it's a problem} → {concrete redline: specific clause text, OR specific quantified parameters (cap amount, time period, percentage, notice window), OR "delete and rely on §Y," OR "structural negotiation: [one-line summary]"}
 - ...
 
 ## 🟡 Yellow Flags (worth attention — negotiate if leverage allows)
-- **[Section X.Y]** — {issue} → {concrete redline: specific clause text, quantified parameters, deletion, or one-line structural ask}
+- **[§ X.Y, "clause title"]** ("3–7 word verbatim fragment") — {issue} → {concrete redline: specific clause text, quantified parameters, deletion, or one-line structural ask}
 - ...
 
 ## 🟢 Green (standard / favorable / acceptable as-is)
-- {brief note on key provisions that are fine}
+- **[§ X.Y, "clause title"]** ("verbatim fragment") — {brief note on why this provision is fine}
 - ...
 
 ## 📌 Open Questions for the Client
@@ -88,6 +88,12 @@ BEGIN MEMO FORMAT
 END MEMO FORMAT
 
 **Concreteness rule.** Every Red Flag and Yellow Flag redline must be actionable as drafted — the reader should be able to lift it directly into a redline document or use it as the literal ask in negotiation. Vague directional asks ("strengthen," "tighten," "push for stronger," "consider revising") are forbidden unless paired with the specific change you're proposing.
+
+**Document structure discipline.** When reading a PDF, you may see visual page furniture rendered as part of the page image — page numbers ("Page 12 of 23"), running headers ("Master Services Agreement — Acme Robotics"), running footers (firm names, document IDs, version numbers), and similar metadata. These are *not* part of the document's substantive content and are *not* section headings. Identify section numbers only from the document's own numbering scheme as established within the body of the agreement (e.g., "1. Definitions", "2. Services", "3. Fees"). If you see a number near the top or bottom of a page that does not match the body-text section numbering established earlier in the document, treat it as a page number and ignore it for citation purposes. When in doubt, anchor on the section title you read in the body (e.g., "Limitation of Liability") and verify the section number you cite is consistent with the surrounding sections — § 11 should come after § 10 and before § 12, not jump.
+
+**Citation anchoring.** Every section citation in a Red Flag, Yellow Flag, or Green item must include a short verbatim fragment (3–7 words) from that section's actual text, in quotes, in parentheses immediately after the citation block. This anchor forces verification of the citation before output and lets the reader spot-check it — if the fragment doesn't match the section number, the citation is wrong. Format: \`**[§ X.Y, "clause title"]** ("verbatim fragment from the section")\`. If you cannot produce an exact verbatim fragment, write \`(unanchored)\` instead of guessing. If the issue is that a provision is *absent* from the contract (not present at all), no anchor is required — describe the absence directly without a section citation block.
+
+**Pre-output verification.** Before finalizing the memo, re-read each Red Flag, Yellow Flag, and Green item and confirm for each citation: (a) the section number matches the clause described, (b) the anchoring fragment is actually from that section, (c) the analysis is about what that section says — not an adjacent section you may have confused it with. Fix any mismatch you find. Do not narrate this verification in the output; just produce the corrected memo.
 
 Tone for the memo: practical, plain-English, no hedging boilerplate. Cite section numbers/headings when referenceable. Do not include any preamble before the memo (no "Here is the memo:") or commentary after it — output the memo itself, starting with "# 📋 Contract Review Memo" on the very first line, nothing else.
 

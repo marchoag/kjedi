@@ -2,36 +2,33 @@ import "server-only";
 
 import { extractText } from "unpdf";
 
-import { ImageOnlyPdfError } from "@/lib/errors";
-
 const MIN_CHARS_PER_PAGE = 50;
-const MULTI_PAGE_THRESHOLD = 3;
+const SAMPLE_PAGES_FOR_PROBE = 3;
 
-export interface PdfExtractionResult {
-  text: string;
+export interface PdfProbeResult {
   pageCount: number;
   warning?: string;
 }
 
-export async function extractPdfText(
-  bytes: Uint8Array,
-): Promise<PdfExtractionResult> {
+// Lightweight probe that runs at upload time. Anthropic's native PDF handler
+// does the real extraction (text + per-page image rendering) server-side; we
+// only need to characterize the file enough to warn the user if it looks
+// scanned. We never ship the extracted text anywhere — it's discarded after
+// the probe.
+export async function probePdf(bytes: Uint8Array): Promise<PdfProbeResult> {
   const { totalPages, text } = await extractText(bytes, { mergePages: false });
-  const merged = text.join("\n\n").trim();
-  const totalChars = merged.length;
-  const charsPerPage = totalPages > 0 ? totalChars / totalPages : 0;
+  const sample = text.slice(0, SAMPLE_PAGES_FOR_PROBE);
+  const totalSampleChars = sample.reduce((sum, page) => sum + page.length, 0);
+  const avgCharsPerPage =
+    sample.length > 0 ? totalSampleChars / sample.length : 0;
 
-  if (charsPerPage < MIN_CHARS_PER_PAGE) {
-    if (totalPages >= MULTI_PAGE_THRESHOLD) {
-      throw new ImageOnlyPdfError();
-    }
-    return {
-      text: merged,
-      pageCount: totalPages,
-      warning:
-        "Very little text was extracted from this PDF. Results may be poor; consider OCRing it first.",
-    };
+  if (avgCharsPerPage >= MIN_CHARS_PER_PAGE) {
+    return { pageCount: totalPages };
   }
 
-  return { text: merged, pageCount: totalPages };
+  return {
+    pageCount: totalPages,
+    warning:
+      "This PDF appears to be scanned (no text layer detected). Claude can still read it via vision, but expect higher cost (~2× per page) and slightly lower accuracy than a text-layer PDF. Consider OCRing it first for best results.",
+  };
 }

@@ -1,5 +1,10 @@
 # Contract Review Web App — PRD
 
+> **Status: historical.** This is the v1 PRD as written before the build started.
+> Some tech choices evolved during construction (Next.js 16 instead of 15, `unpdf`
+> instead of `pdfjs-dist`, system prompt iterated to v2 in `lib/system-prompt.ts`).
+> Treat this doc as the original intent and threat model — not the current spec.
+
 ## Context
 
 Marc is a solo lawyer evaluating Claude for confidential legal-contract review. He already has an Anthropic API key under his law-firm account governed by Commercial Terms (no training, 30-day retention, DPA-eligible). The polished consumer/Teams UIs are unattractive for solo use (Teams' 5-seat minimum ≈ $1,500/yr; Claude.ai Pro/Max sits under Consumer Terms).

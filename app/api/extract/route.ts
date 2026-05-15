@@ -1,5 +1,5 @@
 import { extractDocxText } from "@/lib/extract-docx";
-import { extractPdfText } from "@/lib/extract-pdf";
+import { probePdf } from "@/lib/extract-pdf";
 import { UnsupportedFileError, errorPayload } from "@/lib/errors";
 
 const PDF_MIME = "application/pdf";
@@ -32,15 +32,26 @@ export async function POST(request: Request) {
 
     const bytes = new Uint8Array(await entry.arrayBuffer());
 
-    const result = isPdf
-      ? await extractPdfText(bytes)
-      : { ...(await extractDocxText(bytes)), pageCount: undefined as number | undefined, warning: undefined as string | undefined };
+    if (isPdf) {
+      // PDF: probe only — return metadata + optional scanned warning.
+      // The actual document goes to Anthropic via the chat route as a base64
+      // document block; we don't extract text on this side.
+      const probe = await probePdf(bytes);
+      return Response.json({
+        kind: "pdf" as const,
+        filename,
+        pageCount: probe.pageCount,
+        warning: probe.warning,
+      });
+    }
 
+    // DOCX: extract to markdown server-side (Anthropic's native handler is
+    // PDF-only; mammoth → turndown produces clean text the model handles well).
+    const { text } = await extractDocxText(bytes);
     return Response.json({
+      kind: "docx" as const,
       filename,
-      text: result.text,
-      pageCount: "pageCount" in result ? result.pageCount : undefined,
-      warning: "warning" in result ? result.warning : undefined,
+      text,
     });
   } catch (err) {
     const { code, message } = errorPayload(err);

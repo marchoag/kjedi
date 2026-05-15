@@ -6,16 +6,6 @@ export class UnsupportedFileError extends Error {
   }
 }
 
-export class ImageOnlyPdfError extends Error {
-  readonly code = "image_only_pdf";
-  constructor(
-    message = "This appears to be a scanned PDF. OCR it externally and re-upload.",
-  ) {
-    super(message);
-    this.name = "ImageOnlyPdfError";
-  }
-}
-
 export class DocumentTooLargeError extends Error {
   readonly code = "document_too_large";
   constructor(message = "Document exceeds the maximum size for this app.") {
@@ -34,7 +24,6 @@ export class ApiKeyMissingError extends Error {
 
 export type AppErrorCode =
   | "unsupported_file"
-  | "image_only_pdf"
   | "document_too_large"
   | "api_key_missing"
   | "extraction_failed";
@@ -45,7 +34,6 @@ export function errorPayload(err: unknown): {
 } {
   if (
     err instanceof UnsupportedFileError ||
-    err instanceof ImageOnlyPdfError ||
     err instanceof DocumentTooLargeError ||
     err instanceof ApiKeyMissingError
   ) {

@@ -2,18 +2,21 @@
 
 import { useCallback, useRef, useState } from "react";
 
-export interface ExtractedDocument {
-  filename: string;
-  text: string;
-  pageCount?: number;
-  warning?: string;
-}
+export type LoadedDocument =
+  | { kind: "docx"; filename: string; text: string }
+  | {
+      kind: "pdf";
+      filename: string;
+      base64: string;
+      pageCount: number;
+      warning?: string;
+    };
 
 interface UploaderProps {
-  onExtracted: (doc: ExtractedDocument) => void;
+  onLoaded: (doc: LoadedDocument) => void;
 }
 
-export function Uploader({ onExtracted }: UploaderProps) {
+export function Uploader({ onLoaded }: UploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -29,22 +32,39 @@ export function Uploader({ onExtracted }: UploaderProps) {
         const res = await fetch("/api/extract", { method: "POST", body: form });
         const json = await res.json();
         if (!res.ok) {
-          setError(json?.error?.message ?? "Failed to extract document.");
+          setError(json?.error?.message ?? "Failed to process document.");
           return;
         }
-        onExtracted({
-          filename: json.filename,
-          text: json.text,
-          pageCount: json.pageCount,
-          warning: json.warning,
-        });
+
+        if (json.kind === "pdf") {
+          // PDF: server only probed for metadata. We need the raw bytes to
+          // pass to /api/chat as a base64 document block. Read client-side
+          // via FileReader (avoids stack overflow on large files vs.
+          // String.fromCharCode(...new Uint8Array)).
+          const base64 = await fileToBase64(file);
+          onLoaded({
+            kind: "pdf",
+            filename: json.filename,
+            base64,
+            pageCount: json.pageCount,
+            warning: json.warning,
+          });
+        } else if (json.kind === "docx") {
+          onLoaded({
+            kind: "docx",
+            filename: json.filename,
+            text: json.text,
+          });
+        } else {
+          setError(`Unexpected response kind: ${json.kind}`);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setBusy(false);
       }
     },
-    [onExtracted],
+    [onLoaded],
   );
 
   return (
@@ -69,7 +89,7 @@ export function Uploader({ onExtracted }: UploaderProps) {
         } ${busy ? "pointer-events-none opacity-60" : ""}`}
       >
         <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-          {busy ? "Extracting…" : "Drop a contract here"}
+          {busy ? "Loading…" : "Drop a contract here"}
         </p>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           or click to choose a PDF or DOCX
@@ -90,4 +110,19 @@ export function Uploader({ onExtracted }: UploaderProps) {
       )}
     </div>
   );
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // result is "data:application/pdf;base64,XXXXX..." — strip the prefix
+      const comma = result.indexOf(",");
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("FileReader error"));
+    reader.readAsDataURL(file);
+  });
 }
