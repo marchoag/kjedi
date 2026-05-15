@@ -142,4 +142,4 @@ This software is provided "as is," without warranty of any kind, express or impl
 
 Nothing in this repository constitutes legal advice. Nothing in this repository creates an attorney-client relationship. If you are a non-lawyer and you are reviewing contracts for yourself or others, you should retain qualified counsel — full stop, not "consider retaining." If you are a lawyer, you are responsible for the professional and ethical use of any tool, including this one.
 
-*This README was last updated [DATE]. Anthropic's terms, model capabilities, and pricing may have changed since.*
+*This README was last updated May 15, 2026 Anthropic's terms, model capabilities, and pricing may have changed since.*
