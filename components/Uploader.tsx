@@ -37,10 +37,6 @@ export function Uploader({ onLoaded }: UploaderProps) {
         }
 
         if (json.kind === "pdf") {
-          // PDF: server only probed for metadata. We need the raw bytes to
-          // pass to /api/chat as a base64 document block. Read client-side
-          // via FileReader (avoids stack overflow on large files vs.
-          // String.fromCharCode(...new Uint8Array)).
           const base64 = await fileToBase64(file);
           onLoaded({
             kind: "pdf",
@@ -68,7 +64,7 @@ export function Uploader({ onLoaded }: UploaderProps) {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col items-stretch gap-4 px-4 py-12">
+    <div className="mx-auto flex w-full max-w-xl flex-col items-stretch gap-4 px-6 py-16">
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -82,16 +78,33 @@ export function Uploader({ onLoaded }: UploaderProps) {
           if (file) void handleFile(file);
         }}
         onClick={() => inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-8 py-16 text-center transition-colors ${
+        className={`group flex cursor-pointer flex-col items-center justify-center rounded-[18px] border px-8 py-20 text-center transition-all duration-200 ${
           dragOver
-            ? "border-zinc-900 bg-zinc-100 dark:border-zinc-200 dark:bg-zinc-900"
-            : "border-zinc-300 hover:border-zinc-500 dark:border-zinc-700 dark:hover:border-zinc-500"
+            ? "border-accent bg-[color-mix(in_srgb,var(--color-accent),transparent_94%)]"
+            : "border-divider bg-subtle hover:border-fg-tertiary"
         } ${busy ? "pointer-events-none opacity-60" : ""}`}
+        style={{ borderStyle: "dashed", borderWidth: "1.5px" }}
       >
-        <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-          {busy ? "Loading…" : "Drop a contract here"}
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-bg shadow-sm transition-transform duration-200 group-hover:scale-105">
+          <svg
+            className="h-7 w-7 text-fg-secondary"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+            <path d="M5 3h9l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+            <path d="M9 13h6M9 17h4" strokeWidth="1.2" />
+          </svg>
+        </div>
+        <p className="text-[17px] font-semibold tracking-tight text-fg">
+          {busy ? "Loading…" : "Drop a contract"}
         </p>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1.5 text-[13px] text-fg-secondary">
           or click to choose a PDF or DOCX
         </p>
         <input
@@ -106,7 +119,9 @@ export function Uploader({ onLoaded }: UploaderProps) {
         />
       </div>
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <div className="rounded-[12px] border border-divider-soft bg-subtle px-4 py-3 text-[13px] text-danger">
+          {error}
+        </div>
       )}
     </div>
   );
@@ -117,7 +132,6 @@ function fileToBase64(file: File): Promise<string> {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
-      // result is "data:application/pdf;base64,XXXXX..." — strip the prefix
       const comma = result.indexOf(",");
       resolve(comma >= 0 ? result.slice(comma + 1) : result);
     };

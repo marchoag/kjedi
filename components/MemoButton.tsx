@@ -13,10 +13,23 @@ export function MemoButton({ disabled, onClick }: MemoButtonProps) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+      className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[13px] font-medium text-white shadow-sm transition-all hover:bg-accent-hover active:scale-[0.97] disabled:cursor-default disabled:opacity-40"
     >
-      <span aria-hidden>📋</span>
-      Generate Review Memo
+      <svg
+        className="h-3.5 w-3.5"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M4 2.5h6l3.5 3.5v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1z" />
+        <path d="M10 2.5v3.5h3.5" />
+        <path d="M5.5 9.5h5M5.5 11.5h3.5" />
+      </svg>
+      Generate Memo
     </button>
   );
 }

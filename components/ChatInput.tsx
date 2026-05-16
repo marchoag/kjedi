@@ -33,37 +33,61 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-black">
-      <div className="mx-auto flex max-w-4xl items-end gap-2">
-        <textarea
-          ref={ref}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-              e.preventDefault();
-              send();
-            }
-          }}
-          rows={1}
-          placeholder="Ask about the document. Cmd+Enter to send."
-          disabled={disabled && !streaming}
-          className="min-h-[40px] flex-1 resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-        />
+    <div className="chrome border-t border-divider-soft px-4 py-3">
+      <div className="mx-auto flex max-w-4xl items-end gap-2.5">
+        <div className="flex-1 rounded-[20px] border border-divider bg-bg px-4 py-2 shadow-sm transition-colors focus-within:border-accent">
+          <textarea
+            ref={ref}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                e.preventDefault();
+                send();
+              }
+            }}
+            rows={1}
+            placeholder="Message Claude — ⌘↩ to send"
+            disabled={disabled && !streaming}
+            className="block w-full resize-none bg-transparent text-[15px] leading-relaxed text-fg outline-none placeholder:text-fg-tertiary disabled:opacity-60"
+          />
+        </div>
         {streaming ? (
           <button
             onClick={onAbort}
-            className="h-10 rounded-md bg-zinc-200 px-4 text-sm font-medium text-zinc-900 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-subtle text-fg transition-all hover:bg-divider active:scale-95"
+            aria-label="Stop"
+            title="Stop"
           >
-            Stop
+            <svg
+              className="h-3.5 w-3.5"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <rect x="4" y="4" width="8" height="8" rx="1.5" />
+            </svg>
           </button>
         ) : (
           <button
             onClick={send}
             disabled={!text.trim() || disabled}
-            className="h-10 rounded-md bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white shadow-sm transition-all hover:bg-accent-hover active:scale-95 disabled:cursor-default disabled:bg-divider disabled:shadow-none"
+            aria-label="Send"
+            title="Send"
           >
-            Send
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" />
+            </svg>
           </button>
         )}
       </div>

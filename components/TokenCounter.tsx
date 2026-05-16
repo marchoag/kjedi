@@ -16,24 +16,38 @@ const fmt = (n: number) => n.toLocaleString();
 export function TokenCounter({ usage }: TokenCounterProps) {
   const cached = usage.cacheRead > 0;
   return (
-    <div className="border-t border-zinc-200 bg-zinc-50 px-4 py-1.5 text-[11px] text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
-      <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-4 gap-y-1 font-mono">
-        <span>
-          input <strong>{fmt(usage.input)}</strong> · cache write{" "}
-          <strong>{fmt(usage.cacheCreate)}</strong> · cache read{" "}
-          <strong>{fmt(usage.cacheRead)}</strong> · output{" "}
-          <strong>{fmt(usage.output)}</strong>
-        </span>
+    <div className="chrome border-t border-divider-soft px-4 py-1.5">
+      <div className="num mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-5 gap-y-1 font-mono text-[10.5px] text-fg-tertiary">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+          <Stat label="input" value={usage.input} />
+          <Dot />
+          <Stat label="cache write" value={usage.cacheCreate} />
+          <Dot />
+          <Stat label="cache read" value={usage.cacheRead} />
+          <Dot />
+          <Stat label="output" value={usage.output} />
+        </div>
         <span
-          className={
-            cached
-              ? "text-green-700 dark:text-green-400"
-              : "text-zinc-500 dark:text-zinc-500"
-          }
+          className={`inline-flex items-center gap-1 ${
+            cached ? "text-success" : "text-fg-tertiary"
+          }`}
         >
           {cached ? "✓ cache hit" : "no cache hit yet"}
         </span>
       </div>
     </div>
   );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <span>
+      <span className="opacity-60">{label}</span>{" "}
+      <span className="font-semibold text-fg">{fmt(value)}</span>
+    </span>
+  );
+}
+
+function Dot() {
+  return <span className="opacity-30">·</span>;
 }

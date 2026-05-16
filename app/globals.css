@@ -1,27 +1,171 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Type — SF Pro for UI chrome, ui-serif (New York / Iowan / Georgia) for
+     memo content. Legal memos are documents; treat them as such. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: ui-serif, "New York", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Color — Apple system colors. Warm neutrals, not cool zinc. */
+  --color-accent: #007AFF;
+  --color-accent-hover: #0066CC;
+  --color-bg: #FFFFFF;
+  --color-bg-grouped: #F2F2F7;
+  --color-fg: #1D1D1F;
+  --color-fg-secondary: rgba(60, 60, 67, 0.66);
+  --color-fg-tertiary: rgba(60, 60, 67, 0.4);
+  --color-subtle: #F5F5F7;
+  --color-divider: rgba(60, 60, 67, 0.18);
+  --color-divider-soft: rgba(60, 60, 67, 0.08);
+  --color-chrome: rgba(255, 255, 255, 0.72);
+
+  /* System semantic colors */
+  --color-warn: #FF9500;
+  --color-success: #34C759;
+  --color-danger: #FF3B30;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-accent: #0A84FF;
+    --color-accent-hover: #2D98FF;
+    --color-bg: #1C1C1E;
+    --color-bg-grouped: #000000;
+    --color-fg: #F2F2F7;
+    --color-fg-secondary: rgba(235, 235, 245, 0.62);
+    --color-fg-tertiary: rgba(235, 235, 245, 0.36);
+    --color-subtle: #2C2C2E;
+    --color-divider: rgba(235, 235, 245, 0.16);
+    --color-divider-soft: rgba(235, 235, 245, 0.08);
+    --color-chrome: rgba(28, 28, 30, 0.72);
+    --color-warn: #FF9F0A;
+    --color-success: #30D158;
+    --color-danger: #FF453A;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* macOS vibrancy / translucent material — used on toolbar, composer, footer */
+@utility chrome {
+  background-color: var(--color-chrome);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: "kern", "liga", "calt", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Tabular figures for token counters and any numeric UI */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Lightsaber loader — single-blade Jedi saber. Ignites then spins.
+     Cute, on-brand for a "Kjedi" contract review tool. */
+  .lightsaber {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    animation: saber-spin 1.6s linear infinite;
+    transform-origin: 50% 50%;
+  }
+
+  .lightsaber .hilt {
+    display: block;
+    width: 22px;
+    height: 9px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, #6b6b6d, #2c2c2e);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
+  }
+
+  .lightsaber .blade {
+    display: block;
+    width: 60px;
+    height: 4px;
+    margin-left: 2px;
+    border-radius: 2px;
+    background: #66ccff;
+    box-shadow:
+      0 0 6px #66ccff,
+      0 0 14px rgba(102, 204, 255, 0.75),
+      0 0 22px rgba(102, 204, 255, 0.4);
+    animation:
+      blade-ignite 0.5s ease-out both,
+      blade-hum 1.6s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes blade-ignite {
+    0% {
+      width: 0;
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+    100% {
+      width: 60px;
+      opacity: 1;
+    }
+  }
+
+  @keyframes blade-hum {
+    0%,
+    100% {
+      box-shadow:
+        0 0 6px #66ccff,
+        0 0 14px rgba(102, 204, 255, 0.75),
+        0 0 22px rgba(102, 204, 255, 0.4);
+    }
+    50% {
+      box-shadow:
+        0 0 8px #66ccff,
+        0 0 18px rgba(102, 204, 255, 0.9),
+        0 0 28px rgba(102, 204, 255, 0.55);
+    }
+  }
+
+  @keyframes saber-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Subtle scrollbar styling (Mac feel) */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-divider);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-fg-tertiary);
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
