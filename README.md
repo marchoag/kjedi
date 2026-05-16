@@ -145,7 +145,7 @@ MIT. Use it, fork it, modify it, ship your own version. Attribution appreciated 
 
 ## 🔗 Related
 
-- [Blog post: why I built KJedi instead of using a SaaS legal AI tool](#) *(link forthcoming)*
+- [Blog post: why I built KJedi instead of using a SaaS legal AI tool]([#](https://hoaglaw.ai/blog/kjedi-a-local-open-source-contract-review-tool-for-california-ai-focused-saas-attorneys)) *(link forthcoming)*
 - [Hoag Law.ai](https://hoaglaw.ai) — my California fractional-GC practice
 - [My App Portfolio](https://marchoag.com) — a collection of my various web and iOS apps
 - [Marc Hoag on LinkedIn](https://linkedin.com/in/marchoag) | [@marc.hoag.ai.lawyer on TikTok](https://tiktok.com/@marc.hoag.ai.lawyer) | [@MarcHoag on X](https://x.com/marchoag)
