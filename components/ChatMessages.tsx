@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -14,13 +14,9 @@ interface ChatMessagesProps {
   streamingText?: string | null;
 }
 
+// Scroll behavior is now managed by the parent (app/page.tsx) which owns the
+// scroll container. This component only renders.
 export function ChatMessages({ messages, streamingText }: ChatMessagesProps) {
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length, streamingText]);
-
   return (
     <div className="flex flex-col gap-6 px-4 py-6">
       {messages.map((m, i) => (
@@ -29,7 +25,6 @@ export function ChatMessages({ messages, streamingText }: ChatMessagesProps) {
       {streamingText !== null && streamingText !== undefined && (
         <Bubble role="assistant" text={streamingText} streaming />
       )}
-      <div ref={endRef} />
     </div>
   );
 }
@@ -54,7 +49,7 @@ function Bubble({
   }
   return (
     <div className="group flex flex-col items-start gap-1">
-      <div className="prose prose-sm dark:prose-invert max-w-[95%] text-zinc-900 dark:text-zinc-100">
+      <div className="prose prose-zinc prose-sm dark:prose-invert max-w-none w-full prose-h1:text-2xl prose-h1:mb-3 prose-h1:mt-0 prose-h2:text-base prose-h2:font-semibold prose-h2:mt-6 prose-h2:mb-2 prose-h3:text-sm prose-h3:mt-4 prose-h3:mb-1 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-strong:font-semibold prose-blockquote:border-l-zinc-300 prose-blockquote:text-zinc-600 dark:prose-blockquote:border-l-zinc-700 dark:prose-blockquote:text-zinc-400">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
         {streaming && (
           <span className="ml-0.5 inline-block h-3 w-1.5 animate-pulse bg-zinc-500" />

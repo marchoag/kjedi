@@ -51,6 +51,9 @@ test-fixtures/*
 templates/*
 !templates/README.md
 
+# generated template blob (from `npm run templates`) — never commit
+lib/templates.generated.txt
+
 # vercel
 .vercel
 

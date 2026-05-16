@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ChatInput } from "@/components/ChatInput";
 import { ChatMessages, type ChatMessage } from "@/components/ChatMessages";
@@ -23,6 +23,36 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Scroll-follow behavior: only auto-scroll if the user is already near the
+  // bottom. Once they scroll up, leave them alone until they manually scroll
+  // back down. Clicking "Jump to bottom" re-engages follow mode.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      setAutoScroll(distanceFromBottom < 80);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (autoScroll && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages.length, streamingText, autoScroll]);
+
+  const jumpToBottom = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    setAutoScroll(true);
+  }, []);
+
   const send = useCallback(
     async (text: string) => {
       if (!doc) return;
@@ -41,6 +71,10 @@ export default function Home() {
         doc.kind === "pdf"
           ? { kind: "pdf" as const, base64: doc.base64 }
           : { kind: "docx" as const, text: doc.text };
+
+      // Lift assistantText out of the try so the catch (abort) branch can
+      // preserve a partial response as a stopped-by-user message.
+      let assistantText = "";
 
       try {
         const res = await fetch("/api/chat", {
@@ -63,7 +97,6 @@ export default function Home() {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buf = "";
-        let assistantText = "";
 
         while (true) {
           const { value, done } = await reader.read();
@@ -99,7 +132,18 @@ export default function Home() {
           setMessages((m) => [...m, { role: "assistant", text: assistantText }]);
         }
       } catch (err) {
-        if ((err as { name?: string })?.name !== "AbortError") {
+        if ((err as { name?: string })?.name === "AbortError") {
+          // Preserve the partial response so the user keeps what they got.
+          if (assistantText) {
+            setMessages((m) => [
+              ...m,
+              {
+                role: "assistant",
+                text: `${assistantText}\n\n*[stopped by user]*`,
+              },
+            ]);
+          }
+        } else {
           setError(err instanceof Error ? err.message : String(err));
         }
       } finally {
@@ -188,7 +232,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="relative flex-1 overflow-y-auto">
         <div className="mx-auto max-w-4xl">
           {messages.length === 0 && !streaming && (
             <div className="px-4 py-12 text-center text-sm text-zinc-500">
@@ -202,6 +246,15 @@ export default function Home() {
             </div>
           )}
         </div>
+        {!autoScroll && (
+          <button
+            onClick={jumpToBottom}
+            className="sticky bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border border-zinc-300 bg-white/95 px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-md backdrop-blur hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900/95 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            aria-label="Jump to bottom"
+          >
+            ↓ Jump to bottom
+          </button>
+        )}
       </div>
 
       <TokenCounter usage={usage} />

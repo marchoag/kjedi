@@ -2,6 +2,11 @@ import type Anthropic from "@anthropic-ai/sdk";
 
 import { anthropic, MODEL_ID } from "@/lib/anthropic";
 import { SYSTEM_PROMPT } from "@/lib/system-prompt";
+import { TEMPLATES } from "@/lib/templates";
+
+const SYSTEM_WITH_TEMPLATES = TEMPLATES
+  ? `${SYSTEM_PROMPT}\n\n## Reference templates and firm standards\n\nThe following are the user's firm-standard contract templates. Use them as a reference lens for what "good" looks like in the user's practice — flag deviations from these standards in the contract under review when they create risk for the user's likely client. Do not assume every contract must match these templates exactly; they are a reference, not a rigid checklist.\n\n${TEMPLATES}`
+  : SYSTEM_PROMPT;
 
 interface ClientMessage {
   role: "user" | "assistant";
@@ -128,7 +133,7 @@ export async function POST(request: Request) {
     max_tokens: 64000,
     thinking: { type: "adaptive" },
     output_config: { effort: "high" },
-    system: SYSTEM_PROMPT,
+    system: SYSTEM_WITH_TEMPLATES,
     messages: apiMessages,
   });
 
