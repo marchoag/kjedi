@@ -1,12 +1,12 @@
 # KJedi
 
-**A privacy-preserving, local-only AI contract review tool for solo and small-firm California attorneys.**
+**A privacy-preserving, local-only AI contract review tool for solo and small-firm California attorneys — tuned for AI and SaaS tech-transactions work.**
 
 KJedi is a tiny Next.js app that runs on `localhost` and lets you drop a PDF or DOCX contract in, chat about it with Claude (Anthropic's API), and generate a structured red/yellow/green review memo. It persists nothing — no disk writes, no browser storage, no logs, no analytics, no third-party calls except to Anthropic's API.
 
 It's the minimum viable "bring-your-own-key" replacement for Anthropic's consumer Claude.ai interface, scoped to legal-document review, designed for a professional confidentiality posture.
 
-Built by [Marc Hoag](https://marchoag.com), California attorney and founder of [Hoag Law.ai](https://hoaglaw.ai). KJedi runs the same system prompt and workflow I use for my own client work.
+Built by [Marc Hoag](https://marchoag.com), California attorney and founder of [Hoag Law.ai](https://hoaglaw.ai) — a flat-rate fractional General Counsel practice for AI and SaaS startups. KJedi runs the same system prompt and workflow I use for my own client work.
 
 ---
 
@@ -18,6 +18,21 @@ Built by [Marc Hoag](https://marchoag.com), California attorney and founder of [
 - Use of this tool does **not** create an attorney-client relationship with Marc Hoag or Hoag Law.ai.
 - **You are responsible for your own confidentiality posture.** That includes verifying your Anthropic account terms (see below), running the privacy audit before each session of client work, and applying your own professional judgment to every output.
 - AI output is a starting point for analysis, not a substitute for it. Treat the memo the way you'd treat a junior associate's first pass: read every line, verify every citation, and own every conclusion before any of it goes to a client.
+
+---
+
+## 🎯 Practice focus
+
+The system prompt is tuned for **California AI and SaaS tech-transactions practice** — specifically:
+
+- SaaS subscription agreements, MSAs, SOWs, DPAs, order forms
+- **AI-specific addenda and clauses** in commercial agreements (training data rights, output ownership, IP indemnity for AI outputs, model substitution, accuracy disclaimers, prompt and output confidentiality, sub-processor and upstream-model-provider disclosure)
+- Vendor agreements with AI components (OpenAI, Anthropic, AWS Bedrock, Google Vertex, model-provider terms)
+- Privacy: CCPA/CPRA, GDPR, DPAs
+- IP assignments, contractor and employee IP/confidentiality, NDAs
+- Open-source compliance and AI training-data provenance
+
+**Not tuned for:** real estate, M&A, securities/financing, litigation, regulated-industry compliance (healthcare, FinReg). KJedi will flag if a contract is outside its lane, but you'll get better results from a tool tuned for those areas. The system prompt at [`lib/system-prompt.ts`](lib/system-prompt.ts) is the place to fork if your practice differs.
 
 ---
 

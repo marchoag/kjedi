@@ -123,6 +123,9 @@ export function Uploader({ onLoaded }: UploaderProps) {
           {error}
         </div>
       )}
+      <p className="text-center text-[12px] leading-relaxed text-fg-tertiary">
+        Tuned for California <span className="font-medium text-fg-secondary">AI &amp; SaaS</span> tech-transactions practice. Not optimized for real estate, M&amp;A, securities, or litigation.
+      </p>
     </div>
   );
 }
